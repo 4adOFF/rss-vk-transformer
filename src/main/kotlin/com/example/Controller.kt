@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestMapping
 import java.sql.SQLException
 import java.util.*
+import java.util.function.Consumer
 import javax.sql.DataSource
 
 @Controller
@@ -57,7 +58,8 @@ class Controller {
     internal fun getRss(model: MutableMap<String, Any>): String {
         val output = ArrayList<String>()
 
-        RSSReader(youtubeFeedUrl + youtubeChanelId).getNewestItem()
+        RSSReader(youtubeFeedUrl + youtubeChanelId).getAllFeeds()
+                .forEach(Consumer { f -> output.add(f.title) })
 
         model.put("records", output)
         return "getRss"

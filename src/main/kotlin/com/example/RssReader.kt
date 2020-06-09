@@ -37,6 +37,13 @@ class RSSReader(feedUrl: String) {
     }
 
     /**
+     * Get all items
+     */
+    fun getAllFeeds(): MutableList<FeedItem> {
+        return feed!!.items
+    }
+
+    /**
      * Return info for the specific [searchTerm]. Loops through the entire [feed] starting with most recent to find the
      * first match.
      */
