@@ -62,7 +62,7 @@ class Controller {
                 .forEach(Consumer { f -> output.add(f.title) })
 
         model.put("records", output)
-        return "getRss"
+        return "db"
 
     }
 
