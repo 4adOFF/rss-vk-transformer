@@ -4,8 +4,6 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.SpringApplication
-import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestMapping
@@ -18,6 +16,10 @@ class Controller {
 
     @Value("\${spring.datasource.url}")
     private var dbUrl: String? = null
+    @Value("\${youtube.channel.id}")
+    private var youtubeChanelId: String? = null
+    @Value("\${youtube.feed.url}")
+    private var youtubeFeedUrl: String? = null
 
     @Autowired
     lateinit private var dataSource: DataSource
@@ -48,6 +50,17 @@ class Controller {
             model.put("message", e.message ?: "Unknown error")
             return "error"
         }
+
+    }
+
+    @RequestMapping("/rss/get")
+    internal fun getRss(model: MutableMap<String, Any>): String {
+        val output = ArrayList<String>()
+
+        RSSReader(youtubeFeedUrl + youtubeChanelId).getNewestItem()
+
+        model.put("records", output)
+        return "getRss"
 
     }
 
