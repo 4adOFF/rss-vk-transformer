@@ -57,9 +57,10 @@ class Controller {
     @RequestMapping("/rss/get")
     internal fun getRss(model: MutableMap<String, Any>): String {
         val output = ArrayList<String>()
+        val reader = RSSReader(youtubeFeedUrl + youtubeChanelId)
 
-        RSSReader(youtubeFeedUrl + youtubeChanelId).getAllFeeds()
-                .forEach(Consumer { f -> output.add(f.title) })
+        reader.pollFeed()
+        reader.getAllFeeds().forEach(Consumer { f -> output.add(f.title) })
 
         model.put("records", output)
         return "db"

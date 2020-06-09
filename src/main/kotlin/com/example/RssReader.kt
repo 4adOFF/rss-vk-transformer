@@ -30,62 +30,10 @@ class RSSReader(feedUrl: String) {
     }
 
     /**
-     * Return the [FeedItem] for the newest posting.
-     */
-    fun getNewestItem(): FeedItem? {
-        return feed!!.items[0]
-    }
-
-    /**
      * Get all items
      */
     fun getAllFeeds(): MutableList<FeedItem> {
         return feed!!.items
-    }
-
-    /**
-     * Return info for the specific [searchTerm]. Loops through the entire [feed] starting with most recent to find the
-     * first match.
-     */
-    fun getSpecificItem(searchTerm: String): FeedItem? {
-        val matchValues = HashMap<FeedItem, Int>()
-        if (searchTerm != "") {
-            val separatedSearchTerms = searchTerm.toLowerCase().
-            replace(Regex("[,.]"), "").split(" ")
-            for (item: FeedItem in feed!!.items) {
-                // check for complete match
-                if (searchTerm.toLowerCase() == item.title.toLowerCase()) {
-                    return item
-                }
-                val possibleMatchesInSeparatedTitle = item.title.toLowerCase().
-                replace(Regex("[,.]"), "").split(" ")
-                // Check for multiple search terms
-                if (separatedSearchTerms.size > 1) {
-                    // Need to calculate highest valued match
-                    // First two strings are weighted higher
-                    var numberOfMatches = 0
-                    if (possibleMatchesInSeparatedTitle.contains(separatedSearchTerms[0])) {
-                        for (term in separatedSearchTerms) {
-                            possibleMatchesInSeparatedTitle
-                                    .filter { term == it }
-                                    .forEach {
-                                        numberOfMatches++
-                                        if (term == separatedSearchTerms[0] || term == separatedSearchTerms[1]) {
-                                            numberOfMatches++
-                                        }
-                                    }
-                        }
-                        matchValues.put(item, numberOfMatches)
-                    }
-                } else {
-                    // Check for occurrence of single term search string
-                    if (possibleMatchesInSeparatedTitle.contains(searchTerm)) {
-                        return item
-                    }
-                }
-            }
-        }
-        return matchValues.maxBy { it.value }?.key
     }
 
     /**
@@ -130,7 +78,7 @@ class RSSReader(feedUrl: String) {
                 if (event.isStartElement) {
                     val localPart = event.asStartElement().name.localPart
                     when (localPart) {
-                        "item" -> {
+                        "feed" -> {
                             if (isFeedHeader) {
                                 isFeedHeader = false
                                 feed = Feed(title, link, description, language,
@@ -144,11 +92,11 @@ class RSSReader(feedUrl: String) {
                         "guid" -> guid = getCharacterData(event, eventReader)
                         "language" -> language = getCharacterData(event, eventReader)
                         "author" -> author = getCharacterData(event, eventReader)
-                        "pubDate" -> publishDate = getCharacterData(event, eventReader)
+                        "published" -> publishDate = getCharacterData(event, eventReader)
                         "copyright" -> copyright = getCharacterData(event, eventReader)
                     }
                 } else if (event.isEndElement) {
-                    if (event.asEndElement().name.localPart === "item") {
+                    if (event.asEndElement().name.localPart === "entry") {
                         val newItem = FeedItem()
                         newItem.author = author
                         newItem.description = description
