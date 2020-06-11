@@ -1,16 +1,19 @@
 package com.example
 
+import com.rometools.rome.feed.rss.Channel
+import com.rometools.rome.feed.rss.Description
+import com.rometools.rome.feed.rss.Item
 import java.io.IOException
 import java.io.InputStream
 import java.net.MalformedURLException
 import java.net.URL
+import java.nio.charset.Charset
 
 import javax.xml.stream.XMLEventReader
 import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLStreamException
 import javax.xml.stream.events.Characters
 import javax.xml.stream.events.XMLEvent
-import kotlin.collections.HashMap
 
 /**
  * Reads and consumes an RSS [feed] from a given URL.
@@ -18,7 +21,7 @@ import kotlin.collections.HashMap
 class RSSReader(feedUrl: String) {
 
     private var url: URL? = null
-    private var feed: Feed? = null
+    var feed: Channel = Channel()
 
     init {
         try {
@@ -26,14 +29,14 @@ class RSSReader(feedUrl: String) {
         } catch (e: MalformedURLException) {
             throw RuntimeException(e)
         }
-        this.feed = buildFeed()
+        this.feed = Channel()
     }
 
     /**
      * Get all items
      */
-    fun getAllFeeds(): MutableList<FeedItem> {
-        return feed!!.items
+    fun getAllFeeds(): MutableList<Item> {
+        return feed.items
     }
 
     /**
@@ -42,7 +45,7 @@ class RSSReader(feedUrl: String) {
      */
     fun pollFeed(): Boolean {
         val currFeed = buildFeed()
-        if (this.feed!!.items.size < currFeed!!.items.size) {
+        if (this.feed.items.size < currFeed.items.size) {
             this.feed = currFeed
             return true
         }
@@ -52,8 +55,8 @@ class RSSReader(feedUrl: String) {
     /**
      * Reads from the rss xml and builds a [Feed].
      */
-    private fun buildFeed(): Feed? {
-        var feed: Feed? = null
+    fun buildFeed(): Channel {
+        var feed = this.feed
         try {
             var isFeedHeader = true
 
@@ -81,8 +84,12 @@ class RSSReader(feedUrl: String) {
                         "feed" -> {
                             if (isFeedHeader) {
                                 isFeedHeader = false
-                                feed = Feed(title, link, description, language,
-                                        copyright, publishDate)
+                                feed.title = title
+                                feed.link = link
+                                feed.description = description
+                                feed.language = language
+                                feed.copyright = copyright
+//                                feed.pubDate = publishDate
                             }
                             event = eventReader.nextEvent()
                         }
@@ -97,14 +104,15 @@ class RSSReader(feedUrl: String) {
                     }
                 } else if (event.isEndElement) {
                     if (event.asEndElement().name.localPart === "entry") {
-                        val newItem = FeedItem()
+                        val newItem = Item()
                         newItem.author = author
-                        newItem.description = description
-                        newItem.guid = guid
+                        val d = Description()
+                        d.value = description
+                        newItem.description = d
                         newItem.link = link
                         newItem.title = title
-                        newItem.pubDate = publishDate
-                        feed!!.items.add(newItem)
+//                        newItem.pubDate = publishDate
+                        feed.items.add(newItem)
                         event = eventReader.nextEvent()
                         continue
                     }

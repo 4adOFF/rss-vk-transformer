@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import java.sql.SQLException
 import java.util.*
-import java.util.function.Consumer
 import javax.sql.DataSource
 
 @Controller
@@ -18,7 +18,7 @@ class Controller {
     @Value("\${spring.datasource.url}")
     private var dbUrl: String? = null
     @Value("\${youtube.channel.id}")
-    private var youtubeChanelId: String? = null
+    private var youtubeChannelIdDefault: String? = null
     @Value("\${youtube.feed.url}")
     private var youtubeFeedUrl: String? = null
 
@@ -55,15 +55,18 @@ class Controller {
     }
 
     @RequestMapping("/rss/get")
-    internal fun getRss(model: MutableMap<String, Any>): String {
-        val output = ArrayList<String>()
-        val reader = RSSReader(youtubeFeedUrl + youtubeChanelId)
+    internal fun getRss(model: MutableMap<String, Any>, @RequestParam(name = "ytId", required = false) youtubeChannelId: String): RssFeedView? {
+        var channelId = youtubeChannelIdDefault
+        if (youtubeChannelId.isNotBlank()) {
+            channelId = youtubeChannelId
+        }
 
+        val reader = RSSReader(youtubeFeedUrl + channelId)
         reader.pollFeed()
-        reader.getAllFeeds().forEach(Consumer { f -> output.add(f.title) })
 
-        model.put("records", output)
-        return "db"
+        val view = RssFeedView(reader.buildFeed())
+
+        return view
 
     }
 
