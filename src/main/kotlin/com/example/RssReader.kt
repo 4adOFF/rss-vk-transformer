@@ -3,11 +3,12 @@ package com.example
 import com.rometools.rome.feed.rss.Channel
 import com.rometools.rome.feed.rss.Description
 import com.rometools.rome.feed.rss.Item
+import com.sun.xml.internal.stream.events.StartElementEvent
 import java.io.IOException
 import java.io.InputStream
 import java.net.MalformedURLException
 import java.net.URL
-import java.nio.charset.Charset
+import javax.xml.namespace.QName
 
 import javax.xml.stream.XMLEventReader
 import javax.xml.stream.XMLInputFactory
@@ -56,7 +57,6 @@ class RSSReader(feedUrl: String) {
      * Reads from the rss xml and builds a [Feed].
      */
     fun buildFeed(): Channel {
-        var feed = this.feed
         try {
             var isFeedHeader = true
 
@@ -64,18 +64,10 @@ class RSSReader(feedUrl: String) {
             var description = ""
             var title = ""
             var link = ""
-            var language = ""
-            var copyright = ""
-            var author = ""
-            var publishDate = ""
-            var guid = ""
 
-            // Create an XMLInputFactory
             val inputFactory = XMLInputFactory.newInstance()
-            // Setup a new eventReader
             val input = read()
             val eventReader = inputFactory.createXMLEventReader(input)
-            // Parse the RSS XML
             while (eventReader.hasNext()) {
                 var event = eventReader.nextEvent()
                 if (event.isStartElement) {
@@ -87,25 +79,17 @@ class RSSReader(feedUrl: String) {
                                 feed.title = title
                                 feed.link = link
                                 feed.description = description
-                                feed.language = language
-                                feed.copyright = copyright
 //                                feed.pubDate = publishDate
                             }
                             event = eventReader.nextEvent()
                         }
                         "title" -> title = getCharacterData(event, eventReader)
-                        "description" -> description = getCharacterData(event, eventReader)
-                        "link" -> link = getCharacterData(event, eventReader)
-                        "guid" -> guid = getCharacterData(event, eventReader)
-                        "language" -> language = getCharacterData(event, eventReader)
-                        "author" -> author = getCharacterData(event, eventReader)
-                        "published" -> publishDate = getCharacterData(event, eventReader)
-                        "copyright" -> copyright = getCharacterData(event, eventReader)
+//                        "description" -> description = getCharacterData(event, eventReader)
+                        "link" -> link = getLink(event)
                     }
                 } else if (event.isEndElement) {
                     if (event.asEndElement().name.localPart === "entry") {
                         val newItem = Item()
-                        newItem.author = author
                         val d = Description()
                         d.value = description
                         newItem.description = d
@@ -137,6 +121,14 @@ class RSSReader(feedUrl: String) {
             result = event.asCharacters().data
         }
         return result
+    }
+
+    /**
+     * Helper function to handle a single [XMLEvent].
+     */
+    @Throws(XMLStreamException::class)
+    private fun getLink(event: XMLEvent): String {
+        return (event as StartElementEvent).getAttributeByName(QName.valueOf("href")).value
     }
 
     /**

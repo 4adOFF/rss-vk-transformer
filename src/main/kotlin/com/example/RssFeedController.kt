@@ -21,9 +21,10 @@ class RssFeedController {
     private val view: RssFeedView = rssFeedView()
 
     @RequestMapping("/rss/get")
-    internal fun getRss(model: MutableMap<String, Any>, @RequestParam(name = "ytId", required = false) youtubeChannelId: String): RssFeedView? {
+    internal fun getRss(model: MutableMap<String, Any>, @RequestParam(name = "ytId", required = false) youtubeChannelId: String?): RssFeedView {
+
         var channelId = youtubeChannelIdDefault
-        if (youtubeChannelId.isNotBlank()) {
+        if (youtubeChannelId != null && youtubeChannelId.isNotBlank()) {
             channelId = youtubeChannelId
         }
 
@@ -33,7 +34,6 @@ class RssFeedController {
         view.updateFeed(reader.buildFeed())
 
         return view
-
     }
 
     @Bean

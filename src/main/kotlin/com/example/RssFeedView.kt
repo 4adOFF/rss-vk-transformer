@@ -13,7 +13,7 @@ class RssFeedView(var feedDescription: Channel) : AbstractRssFeedView() {
         feed.title = feedDescription.title
         feed.description = feedDescription.description
         feed.link = feedDescription.link
-        feed.feedType = "rss_2.0"
+        this.contentType = "text/xml; charset=UTF-8"
     }
 
     override fun buildFeedItems(model: Map<String?, Any?>?,
