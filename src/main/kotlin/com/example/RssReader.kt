@@ -8,6 +8,8 @@ import java.io.IOException
 import java.io.InputStream
 import java.net.MalformedURLException
 import java.net.URL
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.xml.namespace.QName
 
 import javax.xml.stream.XMLEventReader
@@ -64,6 +66,7 @@ class RSSReader(feedUrl: String) {
             var description = ""
             var title = ""
             var link = ""
+            var pubDate = Date(0)
 
             val inputFactory = XMLInputFactory.newInstance()
             val input = read()
@@ -79,11 +82,12 @@ class RSSReader(feedUrl: String) {
                                 feed.title = title
                                 feed.link = link
                                 feed.description = description
-//                                feed.pubDate = publishDate
+                                feed.pubDate = pubDate
                             }
                             event = eventReader.nextEvent()
                         }
                         "title" -> title = getCharacterData(event, eventReader)
+                        "published" -> pubDate = parseDateString(getCharacterData(event, eventReader))
 //                        "description" -> description = getCharacterData(event, eventReader)
                         "link" -> link = getLink(event)
                     }
@@ -95,7 +99,7 @@ class RSSReader(feedUrl: String) {
                         newItem.description = d
                         newItem.link = link
                         newItem.title = title
-//                        newItem.pubDate = publishDate
+                        newItem.pubDate = pubDate
                         feed.items.add(newItem)
                         event = eventReader.nextEvent()
                         continue
@@ -107,6 +111,10 @@ class RSSReader(feedUrl: String) {
             throw RuntimeException(e)
         }
         return feed
+    }
+
+    private fun parseDateString(textDate: String): Date {
+        return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX").parse(textDate)
     }
 
     /**
