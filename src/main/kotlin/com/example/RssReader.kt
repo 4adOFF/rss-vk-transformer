@@ -66,51 +66,53 @@ class RSSReader(feedUrl: String) {
             val eventReader = inputFactory.createXMLEventReader(input)
             while (eventReader.hasNext()) {
                 var event = eventReader.nextEvent()
-                if (event.isStartElement) {
-                    val localPart = event.asStartElement().name.localPart
-                    when (localPart) {
-                        "feed" -> {
-                            if (isFeedHeader) {
-                                isFeedHeader = false
-                                feed.title = title
-                                feed.updated = pubDate
+                if (feed.entries.size < 2) {//TODO need delete condition after test
+
+                    if (event.isStartElement) {
+                        val localPart = event.asStartElement().name.localPart
+                        when (localPart) {
+                            "feed" -> {
+                                if (isFeedHeader) {
+                                    isFeedHeader = false
+                                    feed.title = title
+                                    feed.updated = pubDate
+                                }
+                                event = eventReader.nextEvent()
                             }
-                            event = eventReader.nextEvent()
+                            "title" -> title = getCharacterData(event, eventReader)
+                            "published" -> pubDate = parseDateString(getCharacterData(event, eventReader))
+                            "description" -> description = getCharacterData(event, eventReader)
+                            "content" -> contentUrl = getAttrValueByName(event, "url")
+                            "link" -> link = getAttrValueByName(event, "href")
                         }
-                        "title" -> title = getCharacterData(event, eventReader)
-                        "published" -> pubDate = parseDateString(getCharacterData(event, eventReader))
-                        "description" -> description = getCharacterData(event, eventReader)
-                        "content" -> contentUrl = getAttrValueByName(event, "url")
-                        "link" -> link = getAttrValueByName(event, "href")
-                    }
-                } else if (event.isEndElement) {
-                    if (event.asEndElement().name.localPart === "entry") {
-                        val newEntry = Entry()
-                        val c = Content()
-                        c.type = "image"
-                        c.value = contentUrl
-                        newEntry.title = title
-                        newEntry.updated = pubDate
+                    } else if (event.isEndElement) {
+                        if (event.asEndElement().name.localPart === "entry") {
+                            val newEntry = Entry()
+                            val c = Content()
+                            c.type = "image"
+                            c.value = contentUrl
+                            newEntry.title = title
+                            newEntry.updated = Date()//pubDate TODO need replace after test
 
-                        val otherlinks: MutableList<Link> = ArrayList()
-                        newEntry.otherLinks = otherlinks
-                        val editlink = Link()
-                        editlink.rel = "edit"
-                        editlink.href = link
-                        otherlinks.add(editlink)
-                        val editMedialink = Link()
-                        editMedialink.rel = "edit-media"
-                        editMedialink.href = contentUrl
-                        otherlinks.add(editMedialink)
-                        val content = Content()
-                        content.src = contentUrl
-                        val contents: MutableList<Content> = ArrayList()
-                        contents.add(content)
-                        newEntry.contents = contents
-
-                        feed.entries.add(newEntry)
-                        event = eventReader.nextEvent()
-                        continue
+                            val otherlinks: MutableList<Link> = ArrayList()
+                            newEntry.otherLinks = otherlinks
+                            val editlink = Link()
+                            editlink.rel = "edit"
+                            editlink.href = link
+                            otherlinks.add(editlink)
+                            val editMedialink = Link()
+                            editMedialink.rel = "edit-media"
+                            editMedialink.href = contentUrl
+                            otherlinks.add(editMedialink)
+                            val content = Content()
+                            content.src = contentUrl
+                            val contents: MutableList<Content> = ArrayList()
+                            contents.add(content)
+                            newEntry.contents = contents
+                            feed.entries.add(newEntry)
+                            event = eventReader.nextEvent()
+                            continue
+                        }
                     }
                 }
             }
