@@ -91,7 +91,7 @@ class RSSReader(feedUrl: String) {
                             val c = Content()
                             c.type = "image"
                             c.value = contentUrl
-                            newEntry.title = title
+                            newEntry.title = title + pubDate
                             newEntry.updated = Date()//pubDate TODO need replace after test
 
                             val otherlinks: MutableList<Link> = ArrayList()
