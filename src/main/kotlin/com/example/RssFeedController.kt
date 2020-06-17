@@ -1,5 +1,6 @@
 package com.example
 
+import com.rometools.rome.feed.atom.Feed
 import com.rometools.rome.feed.rss.Channel
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -38,6 +39,6 @@ class RssFeedController {
 
     @Bean
     fun rssFeedView(): RssFeedView {
-        return RssFeedView(Channel())
+        return RssFeedView(Feed())
     }
 }

@@ -1,6 +1,9 @@
 package com.example
 
-import com.rometools.rome.feed.rss.*
+import com.rometools.rome.feed.atom.Content
+import com.rometools.rome.feed.atom.Entry
+import com.rometools.rome.feed.atom.Feed
+import com.rometools.rome.feed.atom.Link
 import com.sun.xml.internal.stream.events.StartElementEvent
 import java.io.IOException
 import java.io.InputStream
@@ -9,7 +12,6 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.xml.namespace.QName
-
 import javax.xml.stream.XMLEventReader
 import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLStreamException
@@ -17,13 +19,14 @@ import javax.xml.stream.events.Attribute
 import javax.xml.stream.events.Characters
 import javax.xml.stream.events.XMLEvent
 
+
 /**
  * Reads and consumes an RSS [feed] from a given URL.
  */
 class RSSReader(feedUrl: String) {
 
     private var url: URL? = null
-    var feed: Channel = Channel()
+    var feed: Feed = Feed()
 
     init {
         try {
@@ -31,33 +34,23 @@ class RSSReader(feedUrl: String) {
         } catch (e: MalformedURLException) {
             throw RuntimeException(e)
         }
-        this.feed = Channel()
+        this.feed = Feed()
     }
 
-    /**
-     * Get all items
-     */
-    fun getAllFeeds(): MutableList<Item> {
-        return feed.items
+    fun getAllFeeds(): MutableList<Entry> {
+        return feed.entries
     }
 
-    /**
-     * Gets the new state of the RSS feed and checks it against the current [Feed]. If the new state of the RSS feed
-     * contains more episodes, swap the existing feed into the new feed. Return [true] if the swap was successful.
-     */
     fun pollFeed(): Boolean {
         val currFeed = buildFeed()
-        if (this.feed.items.size < currFeed.items.size) {
+        if (this.feed.entries.size < currFeed.entries.size) {
             this.feed = currFeed
             return true
         }
         return false
     }
 
-    /**
-     * Reads from the rss xml and builds a [Feed].
-     */
-    fun buildFeed(): Channel {
+    fun buildFeed(): Feed {
         try {
             var isFeedHeader = true
 
@@ -80,9 +73,7 @@ class RSSReader(feedUrl: String) {
                             if (isFeedHeader) {
                                 isFeedHeader = false
                                 feed.title = title
-                                feed.link = link
-                                feed.description = description
-                                feed.pubDate = pubDate
+                                feed.updated = pubDate
                             }
                             event = eventReader.nextEvent()
                         }
@@ -94,22 +85,30 @@ class RSSReader(feedUrl: String) {
                     }
                 } else if (event.isEndElement) {
                     if (event.asEndElement().name.localPart === "entry") {
-                        val newItem = Item()
-                        val d = Description()
-                        d.type = "text"
-                        d.value = description
-                        val guid = Guid()
-                        guid.value = link
+                        val newEntry = Entry()
                         val c = Content()
                         c.type = "image"
                         c.value = contentUrl
-                        newItem.description = d
-                        newItem.link = link
-                        newItem.title = title
-                        newItem.pubDate = pubDate
-                        newItem.guid = guid
-                        newItem.content = c
-                        feed.items.add(newItem)
+                        newEntry.title = title
+                        newEntry.updated = pubDate
+
+                        val otherlinks: MutableList<Link> = ArrayList()
+                        newEntry.otherLinks = otherlinks
+                        val editlink = Link()
+                        editlink.rel = "edit"
+                        editlink.href = link
+                        otherlinks.add(editlink)
+                        val editMedialink = Link()
+                        editMedialink.rel = "edit-media"
+                        editMedialink.href = contentUrl
+                        otherlinks.add(editMedialink)
+                        val content = Content()
+                        content.src = contentUrl
+                        val contents: MutableList<Content> = ArrayList()
+                        contents.add(content)
+                        newEntry.contents = contents
+
+                        feed.entries.add(newEntry)
                         event = eventReader.nextEvent()
                         continue
                     }
