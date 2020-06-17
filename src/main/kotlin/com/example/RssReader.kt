@@ -93,7 +93,7 @@ class RSSReader(feedUrl: String) {
                             c.value = contentUrl
                             newEntry.title = title + pubDate
                             newEntry.updated = Date()//pubDate TODO need replace after test
-                            newEntry.created = pubDate
+                            newEntry.created = Date()//pubDate TODO need replace after test
                             val otherlinks: MutableList<Link> = ArrayList()
                             newEntry.otherLinks = otherlinks
                             val editlink = Link()
