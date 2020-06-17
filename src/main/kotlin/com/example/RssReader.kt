@@ -66,7 +66,6 @@ class RSSReader(feedUrl: String) {
             val eventReader = inputFactory.createXMLEventReader(input)
             while (eventReader.hasNext()) {
                 var event = eventReader.nextEvent()
-                if (feed.entries.size < 2) {//TODO need delete condition after test
 
                     if (event.isStartElement) {
                         val localPart = event.asStartElement().name.localPart
@@ -92,8 +91,8 @@ class RSSReader(feedUrl: String) {
                             c.type = "image"
                             c.value = contentUrl
                             newEntry.title = title + pubDate
-                            newEntry.updated = Date()//pubDate TODO need replace after test
-                            newEntry.created = Date()//pubDate TODO need replace after test
+                            newEntry.updated = pubDate
+                            newEntry.created = pubDate
                             val otherlinks: MutableList<Link> = ArrayList()
                             newEntry.otherLinks = otherlinks
                             val editlink = Link()
@@ -115,7 +114,6 @@ class RSSReader(feedUrl: String) {
                         }
                     }
                 }
-            }
             eventReader.close()
         } catch (e: XMLStreamException) {
             throw RuntimeException(e)
