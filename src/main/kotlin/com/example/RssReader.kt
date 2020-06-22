@@ -58,7 +58,7 @@ class RSSReader(feedUrl: String) {
             var description = ""
             var title = ""
             var link = ""
-            var contentUrl = ""
+            var imageUrl = ""
             var pubDate = Date(0)
 
             val inputFactory = XMLInputFactory.newInstance()
@@ -81,28 +81,31 @@ class RSSReader(feedUrl: String) {
                             "title" -> title = getCharacterData(event, eventReader)
                             "published" -> pubDate = parseDateString(getCharacterData(event, eventReader))
                             "description" -> description = getCharacterData(event, eventReader)
-                            "thumbnail" -> contentUrl = getAttrValueByName(event, "url")
+                            "thumbnail" -> imageUrl = getAttrValueByName(event, "url")
                             "link" -> link = getAttrValueByName(event, "href")
                         }
                     } else if (event.isEndElement) {
                         if (event.asEndElement().name.localPart === "entry") {
                             val newEntry = Entry()
-                            val c = Content()
-                            c.type = "image"
-                            c.value = contentUrl
                             newEntry.title = title
                             newEntry.updated = pubDate
                             val otherlinks: MutableList<Link> = ArrayList()
                             newEntry.otherLinks = otherlinks
-                            val editlink = Link()
-                            editlink.rel = "edit"
-                            editlink.href = link
-                            otherlinks.add(editlink)
-                            val content = Content()
-                            content.src = contentUrl
-                            val contents: MutableList<Content> = ArrayList()
-                            contents.add(content)
-                            newEntry.contents = contents
+                            val videolink = Link()
+                            videolink.rel = "video"
+                            videolink.href = link
+                            val imglink = Link()
+                            imglink.rel = "image"
+                            imglink.href = imageUrl
+                            otherlinks.add(imglink)
+                            otherlinks.add(videolink)
+
+//                            val c = Content()
+//                            c.type = "image"
+//                            c.src = imageUrl
+//                            val contents: MutableList<Content> = ArrayList()
+//                            contents.add(c)
+//                            newEntry.contents = contents
                             feed.entries.add(newEntry)
                             event = eventReader.nextEvent()
                             continue
