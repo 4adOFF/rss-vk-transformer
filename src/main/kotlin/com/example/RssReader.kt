@@ -81,7 +81,7 @@ class RSSReader(feedUrl: String) {
                             "title" -> title = getCharacterData(event, eventReader)
                             "published" -> pubDate = parseDateString(getCharacterData(event, eventReader))
                             "description" -> description = getCharacterData(event, eventReader)
-                            "content" -> contentUrl = getAttrValueByName(event, "url")
+                            "thumbnail" -> contentUrl = getAttrValueByName(event, "url")
                             "link" -> link = getAttrValueByName(event, "href")
                         }
                     } else if (event.isEndElement) {
@@ -90,19 +90,14 @@ class RSSReader(feedUrl: String) {
                             val c = Content()
                             c.type = "image"
                             c.value = contentUrl
-                            newEntry.title = title + pubDate
+                            newEntry.title = title
                             newEntry.updated = pubDate
-                            newEntry.created = pubDate
                             val otherlinks: MutableList<Link> = ArrayList()
                             newEntry.otherLinks = otherlinks
                             val editlink = Link()
                             editlink.rel = "edit"
                             editlink.href = link
                             otherlinks.add(editlink)
-                            val editMedialink = Link()
-                            editMedialink.rel = "edit-media"
-                            editMedialink.href = contentUrl
-                            otherlinks.add(editMedialink)
                             val content = Content()
                             content.src = contentUrl
                             val contents: MutableList<Content> = ArrayList()
