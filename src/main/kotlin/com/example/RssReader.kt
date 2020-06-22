@@ -99,13 +99,6 @@ class RSSReader(feedUrl: String) {
                             imglink.href = imageUrl
                             otherlinks.add(imglink)
                             otherlinks.add(videolink)
-
-//                            val c = Content()
-//                            c.type = "image"
-//                            c.src = imageUrl
-//                            val contents: MutableList<Content> = ArrayList()
-//                            contents.add(c)
-//                            newEntry.contents = contents
                             feed.entries.add(newEntry)
                             event = eventReader.nextEvent()
                             continue
@@ -113,10 +106,38 @@ class RSSReader(feedUrl: String) {
                     }
                 }
             eventReader.close()
+            feed.entries.add(generateTestEntry(link, imageUrl))
         } catch (e: XMLStreamException) {
             throw RuntimeException(e)
         }
         return feed
+    }
+
+    //todo delete after testing
+    private fun generateTestEntry(link: String, imageUrl: String): Entry {
+
+        val testEntry = Entry()
+        testEntry.title = "test title" + Random().nextInt(1000)
+        testEntry.updated = Date()
+        val otherlinks: MutableList<Link> = ArrayList()
+        testEntry.otherLinks = otherlinks
+        val videolink = Link()
+        videolink.rel = "video"
+        videolink.href = link
+        val imglink = Link()
+        imglink.rel = "image"
+        imglink.href = imageUrl
+        otherlinks.add(imglink)
+        otherlinks.add(videolink)
+
+        val c = Content()
+        c.type = "image"
+        c.src = imageUrl
+        val contents: MutableList<Content> = ArrayList()
+        contents.add(c)
+        testEntry.contents = contents
+
+        return testEntry
     }
 
     private fun parseDateString(textDate: String): Date {
