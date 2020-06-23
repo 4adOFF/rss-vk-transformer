@@ -4,6 +4,7 @@ import com.rometools.rome.feed.atom.Content
 import com.rometools.rome.feed.atom.Entry
 import com.rometools.rome.feed.atom.Feed
 import com.rometools.rome.feed.atom.Link
+import com.rometools.rome.feed.rss.Image
 import com.sun.xml.internal.stream.events.StartElementEvent
 import java.io.IOException
 import java.io.InputStream
@@ -86,9 +87,14 @@ class RSSReader(feedUrl: String) {
                         }
                     } else if (event.isEndElement) {
                         if (event.asEndElement().name.localPart === "entry") {
-                            val newEntry = Entry()
+                            val newEntry = VkRssEntry()
                             newEntry.title = title
                             newEntry.updated = pubDate
+                            val c = Content()
+                            c.value = description
+                            val contents: MutableList<Content> = ArrayList()
+                            contents.add(c)
+                            newEntry.contents = contents
                             val otherlinks: MutableList<Link> = ArrayList()
                             newEntry.otherLinks = otherlinks
                             val videolink = Link()
@@ -100,6 +106,7 @@ class RSSReader(feedUrl: String) {
                             otherlinks.add(imglink)
                             otherlinks.add(videolink)
                             feed.entries.add(newEntry)
+
                             event = eventReader.nextEvent()
                             continue
                         }
@@ -114,28 +121,20 @@ class RSSReader(feedUrl: String) {
     }
 
     //todo delete after testing
-    private fun generateTestEntry(link: String, imageUrl: String): Entry {
-
-        val testEntry = Entry()
-        testEntry.title = "test title" + Random().nextInt(1000)
-        testEntry.updated = Date()
+    private fun generateTestEntry(link: String, imageUrl: String): VkRssEntry {
+        val testEntry = VkRssEntry()
+        testEntry.title = "test title" + Random().nextInt(10000)
+        testEntry.issued = Date()
         val otherlinks: MutableList<Link> = ArrayList()
         testEntry.otherLinks = otherlinks
         val videolink = Link()
         videolink.rel = "video"
         videolink.href = link
-        val imglink = Link()
-        imglink.rel = "image"
-        imglink.href = imageUrl
-        otherlinks.add(imglink)
         otherlinks.add(videolink)
-
-        val c = Content()
-        c.type = "image"
-        c.src = imageUrl
-        val contents: MutableList<Content> = ArrayList()
-        contents.add(c)
-        testEntry.contents = contents
+        val img = Image()
+        img.url = imageUrl
+        img.title = "test image title"
+        testEntry.image = img
 
         return testEntry
     }
@@ -144,26 +143,18 @@ class RSSReader(feedUrl: String) {
         return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX").parse(textDate)
     }
 
-    /**
-     * Helper function to handle a single [XMLEvent].
-     */
     @Throws(XMLStreamException::class)
     private fun getCharacterData(event: XMLEvent, eventReader: XMLEventReader): String {
-        var event = event
         var result = ""
-        event = eventReader.nextEvent()
-        if (event is Characters) {
-            result = event.asCharacters().data
+        var tEvent = event
+        tEvent = eventReader.nextEvent()
+        while (!tEvent.isEndElement) {
+            if (tEvent is Characters) {
+                result += tEvent.asCharacters().data
+                tEvent = eventReader.nextEvent()
+            }
         }
         return result
-    }
-
-    /**
-     * Helper function to handle a single [XMLEvent].
-     */
-    @Throws(XMLStreamException::class)
-    private fun getLink(event: XMLEvent): String {
-        return (event as StartElementEvent).getAttributeByName(QName.valueOf("href")).value
     }
 
     private fun getAttrByName(event: XMLEvent, attrName: String): Attribute {
@@ -174,9 +165,6 @@ class RSSReader(feedUrl: String) {
         return getAttrByName(event, attrName).value
     }
 
-    /**
-     * Helper function to open input stream from RSS url.
-     */
     private fun read(): InputStream {
         try {
             return url!!.openStream()
