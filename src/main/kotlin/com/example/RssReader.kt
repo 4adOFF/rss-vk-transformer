@@ -100,10 +100,7 @@ class RSSReader(feedUrl: String) {
                             val videolink = Link()
                             videolink.rel = "video"
                             videolink.href = link
-                            val imglink = Link()
-                            imglink.rel = "image"
-                            imglink.href = imageUrl
-                            otherlinks.add(imglink)
+                            newEntry.addImage(imageUrl)
                             otherlinks.add(videolink)
                             feed.entries.add(newEntry)
 
