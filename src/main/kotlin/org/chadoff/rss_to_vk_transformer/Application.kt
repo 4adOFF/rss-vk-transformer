@@ -1,4 +1,4 @@
-package com.example
+package org.chadoff.rss_to_vk_transformer
 
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication

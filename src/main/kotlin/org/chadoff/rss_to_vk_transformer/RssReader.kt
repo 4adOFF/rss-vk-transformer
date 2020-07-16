@@ -1,17 +1,15 @@
-package com.example
+package org.chadoff.rss_to_vk_transformer
 
 import com.rometools.rome.feed.atom.Content
-import com.rometools.rome.feed.atom.Entry
 import com.rometools.rome.feed.atom.Feed
 import com.rometools.rome.feed.atom.Link
-import com.rometools.rome.feed.rss.Image
 import com.sun.xml.internal.stream.events.StartElementEvent
 import java.io.IOException
 import java.io.InputStream
 import java.net.MalformedURLException
 import java.net.URL
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 import javax.xml.namespace.QName
 import javax.xml.stream.XMLEventReader
 import javax.xml.stream.XMLInputFactory
@@ -19,11 +17,8 @@ import javax.xml.stream.XMLStreamException
 import javax.xml.stream.events.Attribute
 import javax.xml.stream.events.Characters
 import javax.xml.stream.events.XMLEvent
+import kotlin.collections.ArrayList
 
-
-/**
- * Reads and consumes an RSS [feed] from a given URL.
- */
 class RSSReader(feedUrl: String) {
 
     private var url: URL? = null
@@ -36,10 +31,6 @@ class RSSReader(feedUrl: String) {
             throw RuntimeException(e)
         }
         this.feed = Feed()
-    }
-
-    fun getAllFeeds(): MutableList<Entry> {
-        return feed.entries
     }
 
     fun pollFeed(): Boolean {
@@ -55,16 +46,13 @@ class RSSReader(feedUrl: String) {
         try {
             var isFeedHeader = true
 
-            // Initialize empty feed values
             var description = ""
             var title = ""
             var link = ""
             var imageUrl = ""
             var pubDate = Date(0)
 
-            val inputFactory = XMLInputFactory.newInstance()
-            val input = read()
-            val eventReader = inputFactory.createXMLEventReader(input)
+            val eventReader = initEventReader()
             while (eventReader.hasNext()) {
                 var event = eventReader.nextEvent()
 
@@ -88,6 +76,7 @@ class RSSReader(feedUrl: String) {
                     } else if (event.isEndElement) {
                         if (event.asEndElement().name.localPart === "entry") {
                             val newEntry = VkRssEntry()
+                            newEntry.addImage(imageUrl)
                             newEntry.title = title
                             newEntry.updated = pubDate
                             val c = Content()
@@ -100,7 +89,6 @@ class RSSReader(feedUrl: String) {
                             val videolink = Link()
                             videolink.rel = "video"
                             videolink.href = link
-                            newEntry.addImage(imageUrl)
                             otherlinks.add(videolink)
                             feed.entries.add(newEntry)
 
@@ -110,30 +98,10 @@ class RSSReader(feedUrl: String) {
                     }
                 }
             eventReader.close()
-            feed.entries.add(generateTestEntry(link, imageUrl))
         } catch (e: XMLStreamException) {
             throw RuntimeException(e)
         }
         return feed
-    }
-
-    //todo delete after testing
-    private fun generateTestEntry(link: String, imageUrl: String): VkRssEntry {
-        val testEntry = VkRssEntry()
-        testEntry.title = "test title" + Random().nextInt(10000)
-        testEntry.issued = Date()
-        val otherlinks: MutableList<Link> = ArrayList()
-        testEntry.otherLinks = otherlinks
-        val videolink = Link()
-        videolink.rel = "video"
-        videolink.href = link
-        otherlinks.add(videolink)
-        val img = Image()
-        img.url = imageUrl
-        img.title = "test image title"
-        testEntry.image = img
-
-        return testEntry
     }
 
     private fun parseDateString(textDate: String): Date {
@@ -168,6 +136,12 @@ class RSSReader(feedUrl: String) {
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
+    }
+
+    private fun initEventReader(): XMLEventReader{
+        val inputFactory = XMLInputFactory.newInstance()
+        val input = read()
+        return inputFactory.createXMLEventReader(input)
     }
 
 }

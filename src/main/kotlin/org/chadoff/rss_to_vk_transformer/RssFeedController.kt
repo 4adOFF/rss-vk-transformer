@@ -1,7 +1,6 @@
-package com.example
+package org.chadoff.rss_to_vk_transformer
 
 import com.rometools.rome.feed.atom.Feed
-import com.rometools.rome.feed.rss.Channel
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean

@@ -1,4 +1,4 @@
-package com.example
+package org.chadoff.rss_to_vk_transformer
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource

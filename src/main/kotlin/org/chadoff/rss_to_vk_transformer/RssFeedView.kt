@@ -1,4 +1,4 @@
-package com.example
+package org.chadoff.rss_to_vk_transformer
 
 import com.rometools.rome.feed.atom.Entry
 import com.rometools.rome.feed.atom.Feed
