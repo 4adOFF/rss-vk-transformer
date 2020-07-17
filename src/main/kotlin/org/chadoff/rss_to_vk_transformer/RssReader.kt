@@ -1,8 +1,6 @@
 package org.chadoff.rss_to_vk_transformer
 
-import com.rometools.rome.feed.atom.Content
 import com.rometools.rome.feed.atom.Feed
-import com.rometools.rome.feed.atom.Link
 import com.sun.xml.internal.stream.events.StartElementEvent
 import java.io.IOException
 import java.io.InputStream
@@ -17,7 +15,6 @@ import javax.xml.stream.XMLStreamException
 import javax.xml.stream.events.Attribute
 import javax.xml.stream.events.Characters
 import javax.xml.stream.events.XMLEvent
-import kotlin.collections.ArrayList
 
 class RSSReader(feedUrl: String) {
 
@@ -76,20 +73,10 @@ class RSSReader(feedUrl: String) {
                     } else if (event.isEndElement) {
                         if (event.asEndElement().name.localPart === "entry") {
                             val newEntry = VkRssEntry()
-                            newEntry.addImage(imageUrl)
                             newEntry.title = title
                             newEntry.updated = pubDate
-                            val c = Content()
-                            c.value = description
-                            val contents: MutableList<Content> = ArrayList()
-                            contents.add(c)
-                            newEntry.contents = contents
-                            val otherlinks: MutableList<Link> = ArrayList()
-                            newEntry.otherLinks = otherlinks
-                            val videolink = Link()
-                            videolink.rel = "video"
-                            videolink.href = link
-                            otherlinks.add(videolink)
+                            newEntry.addDescription(description, imageUrl)
+                            newEntry.addVideoLinkAndGuid(link)
                             feed.entries.add(newEntry)
 
                             event = eventReader.nextEvent()
