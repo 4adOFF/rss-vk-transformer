@@ -10,11 +10,11 @@ class VkRssEntry() : Entry() {
 
     fun addDescription(description: String, imageUrl: String) {
         addImage(imageUrl)
-        val imageElement = "<img class=\"aligncenter size-full\" src=\"$imageUrl\" width=\"640\" height=\"480\">"
-        val descriptionElement = "<p>$description</p>"
-        val templateCDATAImg = "<![CDATA[$imageElement $descriptionElement]]>"
+//        val imageElement = "<img class=\"aligncenter size-full\" src=\"$imageUrl\" width=\"640\" height=\"480\">"
+//        val descriptionElement = "<p>$description</p>"
+//        val templateCDATAImg = "<![CDATA[$imageElement $descriptionElement]]>"
         val desc = Element("description")
-        desc.addContent(templateCDATAImg)
+        desc.addContent(description)
         this.foreignMarkup.add(desc)
     }
 
