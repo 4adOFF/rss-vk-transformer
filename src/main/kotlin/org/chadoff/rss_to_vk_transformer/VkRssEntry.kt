@@ -11,7 +11,9 @@ class VkRssEntry() : Entry() {
     fun addDescription(description: String, imageUrl: String) {
         addImage(imageUrl)
         val desc = Element("description")
-        desc.addContent(description)
+        val d = description.replace("\n","<br/>")
+        val templateCDATAImg = "<![CDATA[$d]]>"
+        desc.addContent(templateCDATAImg)
         this.foreignMarkup.add(desc)
     }
 
