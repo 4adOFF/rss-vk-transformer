@@ -66,4 +66,4 @@ _**guid**_ - preview for link to video
 You can start this app on [heroku](https://devcenter.heroku.com/articles/getting-started-with-gradle-on-heroku) <br/>
 You required set var - YOUTUBE_CHANNEL_ID <br/>
 <br/>
-enjoy!
+:black_joker:enjoy!:game_die:
