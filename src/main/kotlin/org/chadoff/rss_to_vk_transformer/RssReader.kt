@@ -66,7 +66,7 @@ class RSSReader(feedUrl: String) {
                             }
                             "title" -> title = getCharacterData(event, eventReader)
                             "published" -> pubDate = parseDateString(getCharacterData(event, eventReader))
-                            "description" -> description = getCharacterData(event, eventReader)
+                            "description" -> description = getMultiStringCharacterData(event, eventReader)
                             "thumbnail" -> imageUrl = getAttrValueByName(event, "url")
                             "link" -> link = getAttrValueByName(event, "href")
                         }
@@ -107,6 +107,25 @@ class RSSReader(feedUrl: String) {
             }
         }
         return result
+    }
+
+    @Throws(XMLStreamException::class)
+    private fun getMultiStringCharacterData(event: XMLEvent, eventReader: XMLEventReader): String {
+        var result = ""
+        var tEvent = event
+        tEvent = eventReader.nextEvent()
+        while (!tEvent.isEndElement) {
+            if (tEvent is Characters) {
+                val data = tEvent.asCharacters().data
+                result += data + addSlashR(data)
+                tEvent = eventReader.nextEvent()
+            }
+        }
+        return result
+    }
+
+    private fun addSlashR(data: String): String {
+        return if (data.endsWith("\n")) "\r\n" else ""
     }
 
     private fun getAttrByName(event: XMLEvent, attrName: String): Attribute {
