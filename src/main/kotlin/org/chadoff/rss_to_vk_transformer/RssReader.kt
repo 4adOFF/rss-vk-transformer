@@ -102,7 +102,11 @@ class RSSReader(feedUrl: String) {
         tEvent = eventReader.nextEvent()
         while (!tEvent.isEndElement) {
             if (tEvent is Characters) {
-                result += tEvent.asCharacters().data
+                val characterData = tEvent.asCharacters().data
+                if (characterData.contains("📱")) {
+                    break
+                }
+                result += characterData
                 tEvent = eventReader.nextEvent()
             }
         }
