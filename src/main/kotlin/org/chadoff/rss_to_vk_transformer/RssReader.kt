@@ -100,7 +100,8 @@ class RSSReader(feedUrl: String) {
         var result = ""
         var tEvent = event
         tEvent = eventReader.nextEvent()
-        while (!tEvent.isEndElement) {
+        while (!tEvent.isEndElement
+                || tEvent is Characters && !tEvent.asCharacters().data.contains("----------")) {
             if (tEvent is Characters) {
                 result += tEvent.asCharacters().data
                 tEvent = eventReader.nextEvent()
