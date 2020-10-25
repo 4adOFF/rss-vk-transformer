@@ -103,8 +103,8 @@ class RSSReader(feedUrl: String) {
         while (!tEvent.isEndElement) {
             if (tEvent is Characters && !tEvent.asCharacters().data.contains("----------")) {
                 result += tEvent.asCharacters().data
-                tEvent = eventReader.nextEvent()
             }
+            tEvent = eventReader.nextEvent()
         }
         return result
     }
